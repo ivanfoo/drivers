@@ -11,16 +11,21 @@ import (
 	"tinygo.org/x/drivers/sh1106"
 )
 
-func main() {
-	machine.SPI1.Configure(machine.SPIConfig{
-		Frequency: 8000000,
-	})
+var (
+	display = sh1106.NewSPI(machine.SPI1, machine.OLED_DC, machine.OLED_RST, machine.OLED_CS)
+)
 
-	display := sh1106.NewSPI(machine.SPI1, machine.OLED_DC, machine.OLED_RST, machine.OLED_CS)
+func init() {
+	machine.SPI1.Configure(machine.SPIConfig{
+		Frequency: 48000000,
+	})
 	display.Configure(sh1106.Config{
 		Width:  128,
 		Height: 64,
 	})
+}
+
+func main() {
 
 	display.ClearDisplay()
 

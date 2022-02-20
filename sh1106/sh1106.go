@@ -17,6 +17,7 @@ import (
 type Device struct {
 	bus        Buser
 	buffer     []byte
+	cmdbuf     [1]byte
 	width      int16
 	height     int16
 	bufferSize int16
@@ -101,6 +102,7 @@ func (d *Device) Configure(cfg Config) {
 
 	d.bus.configure()
 
+	// busyWaitDelay(100 * time.Nanosecond)
 	time.Sleep(100 * time.Nanosecond)
 	d.Command(DISPLAYOFF)
 	d.Command(SETDISPLAYCLOCKDIV)
@@ -241,7 +243,8 @@ func (d *Device) SetScroll(line int16) {
 
 // Command sends a command to the display
 func (d *Device) Command(command uint8) {
-	d.bus.tx([]byte{command}, true)
+	d.cmdbuf[0] = command
+	d.bus.tx(d.cmdbuf[:], true)
 }
 
 // setAddress sets the address to the I2C bus
@@ -265,8 +268,10 @@ func (b *SPIBus) configure() {
 	b.resetPin.Low()
 
 	b.resetPin.High()
+	// busyWaitDelay(time.Millisecond)
 	time.Sleep(1 * time.Millisecond)
 	b.resetPin.Low()
+	// busyWaitDelay(10 * time.Millisecond)
 	time.Sleep(10 * time.Millisecond)
 	b.resetPin.High()
 }
@@ -289,7 +294,7 @@ func (b *I2CBus) tx(data []byte, isCommand bool) {
 func (b *SPIBus) tx(data []byte, isCommand bool) {
 	if isCommand {
 		b.csPin.High()
-		time.Sleep(100 * time.Microsecond)
+		riseTimeDelay()
 		b.dcPin.Low()
 		b.csPin.Low()
 
@@ -297,7 +302,7 @@ func (b *SPIBus) tx(data []byte, isCommand bool) {
 		b.csPin.High()
 	} else {
 		b.csPin.High()
-		time.Sleep(100 * time.Microsecond)
+		riseTimeDelay()
 		b.dcPin.High()
 		b.csPin.Low()
 
@@ -309,4 +314,14 @@ func (b *SPIBus) tx(data []byte, isCommand bool) {
 // Size returns the current size of the display.
 func (d *Device) Size() (w, h int16) {
 	return d.width, d.height
+}
+
+// TODO: is this really necessary? seems to work fine without this on macropad-rp2040 at least
+func riseTimeDelay() {
+	busyWaitDelay(1 * time.Microsecond)
+}
+
+func busyWaitDelay(duration time.Duration) {
+	for start := time.Now(); time.Since(start) < duration; {
+	}
 }
