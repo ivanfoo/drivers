@@ -264,6 +264,32 @@ func (d *Device) Read(blocking bool) uint16 {
 	return d.rangingData.mm
 }
 
+// Set the width and height of ROI
+func (d *Device) SetROISize(width uint8, height uint8) {
+	if width >= 16 {
+		width = 16
+	}
+
+	if height >= 16 {
+		height = 16
+	}
+
+	if width > 10 || height > 10 {
+		d.writeReg(ROI_CONFIG_CENTRE_SPAD, 199)
+	}
+
+	encodedSize := ((height-1)<<4 | (width - 1))
+	d.writeReg(ROI_CONFIG_XY_SIZE, encodedSize)
+}
+
+func (d *Device) GetROISize() (uint8, uint8) {
+	encodedSize := d.readReg(ROI_CONFIG_XY_SIZE)
+	width := (encodedSize & 0xF) + 1
+	height := (encodedSize >> 4) + 1
+
+	return width, height
+}
+
 // updateDSS updates the DSS
 func (d *Device) updateDSS() {
 	spadCount := d.results.effectiveSPADCount

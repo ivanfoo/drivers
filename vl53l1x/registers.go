@@ -56,6 +56,8 @@ const (
 	FIRMWARE_SYSTEM_STATUS                                  = 0x00E5
 	WHO_AM_I                                                = 0x010F
 	SHADOW_RESULT_FINAL_CROSSTALK_CORRECTED_RANGE_MM_SD0_HI = 0x0FBE
+	ROI_CONFIG_CENTRE_SPAD                                  = 0x007F
+	ROI_CONFIG_XY_SIZE                                      = 0x0080
 
 	TIMING_GUARD = 4528
 	TARGETRATE   = 0x0A00
